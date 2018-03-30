@@ -47,6 +47,7 @@ def transcript_sam_to_genomic_sam(sam, transcript, genome_offset,
     # set ZT tag for grouping reads by their original transcript
     sam['ZT'] = sam.rname
 
+    assert genome_offset != None
     # determine the exon read starts in
     sam.rname = transcript.seqid
     for coord in transcript_coords:
