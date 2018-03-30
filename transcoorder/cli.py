@@ -33,6 +33,8 @@ def main(ext_args=None):
         help=
         "SAM tag name for storing transcript identifier. default: %(default)s")
     parser.add_argument(
+        '--debug', action="store_true", help="enable debugging")
+    parser.add_argument(
         '--version',
         action="version",
         version=__version__,
@@ -64,15 +66,17 @@ def main(ext_args=None):
             read_count = None
         with tqdm(total=read_count, unit='read') as pbar:
             for read in bamfile:
-                transcript, genome_offset, transcript_coords = cache_gtf_features(
-                    db, read.rname)
-                if transcript is None:
-                    sys.stderr.write("%s not found in %s" % (read.rname,
-                                                             args.gtf))
+                features = cache_gtf_features(db, read.rname)
+                if not features:
+                    sys.stderr.write("%s not found in %s\n" % (read.rname,
+                                                               args.gtf))
                 else:
-                    sam = transcript_sam_to_genomic_sam(
+                    transcript, genome_offset, transcript_coords = features
+                    if args.debug:
+                        sys.stderr.write("feature: %s\n" % feature)
+                    read = transcript_sam_to_genomic_sam(
                         read, transcript, genome_offset, transcript_coords)
-                    outfile.write(sam)
+                    outfile.write(read)
                 pbar.update(1)
 
 
