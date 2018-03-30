@@ -66,7 +66,7 @@ def main(ext_args=None):
             for read in bamfile:
                 transcript, genome_offset, transcript_coords = cache_gtf_features(
                     db, read.rname)
-                if not transcript:
+                if transcript is None:
                     sys.stderr.write("%s not found in %s" % (read.rname,
                                                              args.gtf))
                 else:
