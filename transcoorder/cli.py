@@ -67,11 +67,12 @@ def main(ext_args=None):
                 transcript, genome_offset, transcript_coords = cache_gtf_features(
                     db, read.rname)
                 if not transcript:
-                    pbar.update(1)
-                    continue
-                sam = transcript_sam_to_genomic_sam(
-                    read, transcript, genome_offset, transcript_coords)
-                outfile.write(sam)
+                    sys.stderr.write("%s not found in %s" % (read.rname,
+                                                             args.gtf))
+                else:
+                    sam = transcript_sam_to_genomic_sam(
+                        read, transcript, genome_offset, transcript_coords)
+                    outfile.write(sam)
                 pbar.update(1)
 
 
