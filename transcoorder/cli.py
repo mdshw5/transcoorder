@@ -64,10 +64,9 @@ def main(ext_args=None):
             read_count = None
         with tqdm(total=read_count, unit='read') as pbar:
             for read in bamfile:
-                try:
-                    transcript, genome_offset, transcript_coords = cache_gtf_features(
-                        db, read.rname)
-                except KeyError:
+                transcript, genome_offset, transcript_coords = cache_gtf_features(
+                    db, read.rname)
+                if not transcript:
                     pbar.update(1)
                     continue
                 sam = transcript_sam_to_genomic_sam(
