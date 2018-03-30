@@ -23,7 +23,7 @@ def cache_gtf_features(db, transcript_id):
     try:
         transcript = db[transcript_id]
     except FeatureNotFoundError:
-        return (None, None, None)
+        return None
     exons = db.children(transcript, featuretype='exon', order_by='start')
     genome_coords = [(exon.start, exon.end) for exon in exons]
     genome_offset = genome_coords[0][0] - 1
