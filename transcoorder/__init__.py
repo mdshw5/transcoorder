@@ -1,5 +1,7 @@
 from simplesam import DefaultOrderedDict
 from collections import OrderedDict
+from functools import lru_cache
+from gffutils.exceptions import FeatureNotFoundError
 
 __version__ = '0.0.1'
 
@@ -16,7 +18,22 @@ def build_sam_header_from_fasta(fasta):
     return header
 
 
-def transcript_sam_to_genomic_sam(sam, db, transcript):
+@lru_cache(maxsize=1000)
+def cache_gtf_features(db, transcript_id):
+    try:
+        transcript = db[transcript_id]
+    except FeatureNotFoundError:
+        raise KeyError
+    exons = db.children(transcript, featuretype='exon', order_by='start')
+    genome_coords = [(exon.start, exon.end) for exon in exons]
+    genome_offset = genome_coords[0][0] - 1
+    transcript_coords = [(start - genome_offset, end - genome_offset)
+                         for start, end in genome_coords]
+    return (transcript, genome_offset, transcript_coords)
+
+
+def transcript_sam_to_genomic_sam(sam, transcript, genome_offset,
+                                  transcript_coords):
     """ Transforms a simplesam.Sam from transcriptome coordinates to
     genomic coordinates.
 
@@ -29,12 +46,6 @@ def transcript_sam_to_genomic_sam(sam, db, transcript):
     """
     # set ZT tag for grouping reads by their original transcript
     sam['ZT'] = sam.rname
-
-    exons = db.children(transcript, featuretype='exon', order_by='start')
-    genome_coords = [(exon.start, exon.end) for exon in exons]
-    genome_offset = genome_coords[0][0] - 1
-    transcript_coords = [(start - genome_offset, end - genome_offset)
-                         for start, end in genome_coords]
 
     # determine the exon read starts in
     sam.rname = transcript.seqid

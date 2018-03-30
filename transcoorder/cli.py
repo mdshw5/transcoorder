@@ -3,10 +3,9 @@ import argparse
 import sys
 from simplesam import Reader, Writer, bam_read_count
 from gffutils import FeatureDB, create_db
-from gffutils.exceptions import FeatureNotFoundError
 from pyfaidx import Fasta
 from tqdm import tqdm
-from transcoorder import transcript_sam_to_genomic_sam, build_sam_header_from_fasta
+from transcoorder import transcript_sam_to_genomic_sam, build_sam_header_from_fasta, cache_gtf_features
 
 
 def main(ext_args=None):
@@ -65,13 +64,16 @@ def main(ext_args=None):
             read_count = None
         with tqdm(total=read_count, unit='read') as pbar:
             for read in bamfile:
-                pbar.update(1)
                 try:
-                    transcript = db[read.rname]
-                    sam = transcript_sam_to_genomic_sam(read, db, transcript)
-                    outfile.write(sam)
-                except FeatureNotFoundError:
-                    pass
+                    transcript, genome_offset, transcript_coords = cache_gtf_features(
+                        db, read.rname)
+                except KeyError:
+                    pbar.update(1)
+                    continue
+                sam = transcript_sam_to_genomic_sam(
+                    read, transcript, genome_offset, transcript_coords)
+                outfile.write(sam)
+                pbar.update(1)
 
 
 if __name__ == "__main__":
