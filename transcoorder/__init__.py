@@ -54,5 +54,5 @@ def transcript_sam_to_genomic_sam(sam, transcript, genome_offset,
         if sam.pos <= coord[1] and sam.pos >= coord[0]:
             # if read falls entirely within exon
             if coord[1] - sam.pos > len(sam):
-                sam.pos += genome_offset
+                sam.pos += coord[0] + genome_offset
                 return sam
