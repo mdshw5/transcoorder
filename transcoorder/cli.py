@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 import argparse
 import sys
-from simplesam import Reader, Writer
+from simplesam import Reader, Writer, bam_read_count
 from gffutils import FeatureDB, create_db
-from transcoorder import transcript_sam_to_genomic_sam
+from pyfaidx import Fasta
+from tqdm import tqdm
+from transcoorder import transcript_sam_to_genomic_sam, build_sam_header_from_fasta
 
 
 def main(ext_args=None):
@@ -13,13 +15,14 @@ def main(ext_args=None):
         'gtf', type=str, help='GTF file containing transcripts')
     parser.add_argument(
         'bam',
-        type=Reader,
-        nargs='*',
+        type=argparse.FileType('r'),
         help="SAM or BAM files aligned to transcriptome")
+    parser.add_argument(
+        'fasta', type=Fasta, help="FASTA format assembly coresponding to GTF")
     parser.add_argument(
         '-o',
         '--out',
-        type=Writer,
+        type=argparse.FileType('w'),
         default='-',
         help="output file for genomic SAM (default: stdout)")
     parser.add_argument(
@@ -53,13 +56,21 @@ def main(ext_args=None):
             disable_infer_transcripts=True,
             disable_infer_genes=True)
 
-    args.out.write()
-    for read in args.bam:
+    header = build_sam_header_from_fasta(args.fasta)
+    with Reader(args.bam) as bamfile, Writer(args.out, header) as outfile:
         try:
-            transcript = db[read.rname]
-            transcript_sam_to_genomic_sam(bam, db, transcript)
-        except KeyError:
-            pass
+            read_count = len(bamfile)
+        except NotImplementedError:
+            read_count = None
+        with tqdm(total=read_count, unit='read') as pbar:
+            for read in bamfile:
+                pbar.update(1)
+                try:
+                    transcript = db[read.rname]
+                    sam = transcript_sam_to_genomic_sam(read, db, transcript)
+                    outfile.write(sam)
+                except KeyError:
+                    pass
 
 
 if __name__ == "__main__":

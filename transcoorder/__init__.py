@@ -1,4 +1,19 @@
+from simplesam import DefaultOrderedDict
+from collections import OrderedDict
+
 __version__ = '0.0.1'
+
+
+def build_sam_header_from_fasta(fasta):
+    """ Make a new header for the genomic SAM file from the chromosomes
+    in the assembly file """
+    header = DefaultOrderedDict(OrderedDict)
+    header['@HD']['VN:1.0'] = ['SO:unknown']
+    for rec in fasta:
+        header['@SQ']['SN:{name}'.format(name=rec.name)] = [
+            'LN:{len}'.format(len=len(rec))
+        ]
+    return header
 
 
 def transcript_sam_to_genomic_sam(sam, db, transcript):
@@ -12,10 +27,6 @@ def transcript_sam_to_genomic_sam(sam, db, transcript):
         simplesam.Sam object with genomic coordinates
 
     """
-    if sam.pos < transcript.start or sam.pos > transcript.end:
-        raise ValueError("Sam position %n is outside of transcript %s" %
-                         (sam.pos, transcript.seqid))
-
     # set ZT tag for grouping reads by their original transcript
     sam['ZT'] = sam.rname
 

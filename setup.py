@@ -2,7 +2,9 @@ from setuptools import setup
 from io import open
 import sys
 
-install_requires = ['six', 'setuptools >= 0.7', 'gffutils', 'simplesam ']
+install_requires = [
+    'six', 'setuptools >= 0.7', 'gffutils', 'simplesam', 'tqdm'
+]
 if sys.version_info[0] == 2 and sys.version_info[1] == 6:
     install_requires.extend(['argparse'])
 
