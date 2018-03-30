@@ -72,10 +72,9 @@ def main(ext_args=None):
                                                                args.gtf))
                 else:
                     transcript, genome_offset, transcript_coords = features
-                    if args.debug:
-                        sys.stderr.write("transcript: %s\n" % features[0])
                     read = transcript_sam_to_genomic_sam(
                         read, transcript, genome_offset, transcript_coords)
+                    assert read != None
                     outfile.write(read)
                 pbar.update(1)
 
