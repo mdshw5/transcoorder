@@ -67,9 +67,10 @@ def main(ext_args=None):
         with tqdm(total=read_count, unit='read') as pbar:
             for read in bamfile:
                 features = cache_gtf_features(db, read.rname)
-                if features == None and args.debug:
-                    sys.stderr.write("%s not found in %s\n" % (read.rname,
-                                                               args.gtf))
+                if features == None:
+                    if args.debug:
+                        sys.stderr.write("%s not found in %s\n" % (read.rname,
+                                                                   args.gtf))
                 else:
                     transcript, genome_offset, transcript_coords = features
                     read = transcript_sam_to_genomic_sam(
