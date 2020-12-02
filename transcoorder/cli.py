@@ -75,7 +75,7 @@ def main(ext_args=None):
                     transcript, genome_offset, transcript_coords = features
                     read = transcript_sam_to_genomic_sam(
                         read, transcript, genome_offset, transcript_coords)
-                    if read:
+                    if read is not None:
                         outfile.write(read)
                 pbar.update(1)
 

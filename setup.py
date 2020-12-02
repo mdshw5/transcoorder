@@ -33,7 +33,6 @@ setup(
     install_requires=install_requires,
     entry_points={'console_scripts': ['transcoord = transcoorder.cli:main']},
     classifiers=[
-        "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: BSD License", "Environment :: Console",
         "Intended Audience :: Science/Research", "Natural Language :: English",
         "Operating System :: Unix", "Programming Language :: Python :: 3.5",
